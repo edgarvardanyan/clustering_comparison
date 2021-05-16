@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.datasets import make_blobs
 from sklearn.cluster import KMeans
 from sklearn.metrics import \
@@ -6,13 +7,15 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 import pandas as pd
 
+from forel import ForelClustering
+
 pd.set_option('display.width', 300)
 pd.set_option('display.max_columns', 10)
 
 data = make_blobs(
     n_samples=200,
     n_features=2,
-    centers=8
+    centers=16
 )
 
 plt.scatter(data[0][:, 0], data[0][:, 1])
@@ -22,6 +25,9 @@ models = []
 
 for i in range(2, 16):
     models.append((KMeans(n_clusters=i), f"KMeans with k={i}"))
+
+for i in np.linspace(1, 10, 18):
+    models.append((ForelClustering(r=i), f"Forel with r={i}"))
 
 results = defaultdict(list)
 
