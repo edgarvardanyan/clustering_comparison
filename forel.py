@@ -1,8 +1,10 @@
 import numpy as np
 from random import choice, shuffle
 import matplotlib.pyplot as plt
-import time
-from sklearn.datasets import make_blobs
+
+import pandas as pd
+from itertools import cycle
+from tqdm import tqdm
 
 
 class ForelClustering:
@@ -10,7 +12,10 @@ class ForelClustering:
     def __init__(self, r: float):
         self.r = r
 
-    def fit_predict(self, data):
+    def fit_predict(self, data, plot=False):
+        if plot:
+            plt.scatter(data[:, 0], data[:, 1], s=1)
+            plt.show()
         n_samples = data.shape[0]
         clusters = []
         labels = [None for _ in range(n_samples)]
@@ -31,22 +36,38 @@ class ForelClustering:
                         break
                 if next_elem is not None:
                     unlabeled_elements.remove(next_elem)
-                    # print(len(unlabeled_elements))
-                    plt.scatter(data[unlabeled_elements][:, 0], data[unlabeled_elements][:, 1], c='black')
-                    plt.scatter(data[next_cluster][:, 0], data[next_cluster][:, 1], c='green')
-                    plt.scatter(data[[next_elem]][:, 0], data[[next_elem]][:, 1], c='yellow')
-                    for cluster in clusters:
-                        plt.scatter(data[cluster][:, 0], data[cluster][:, 1], c='red')
-                    plt.show()
-                    time.sleep(0.3)
                     next_cluster.append(elem)
                     center = np.mean(data[next_cluster], axis=0)
                 else:
-                    clusters.append(next_cluster)
+                    if len(next_cluster) >= 100:
+                        clusters.append(next_cluster)
                     for elem in next_cluster:
                         labels[elem] = next_label
                     next_label += 1
                     break
+        print(f"Found {len(clusters)} clusters")
+        colors = cycle([
+            "black",
+            "silver",
+            "gray",
+            "maroon",
+            "red",
+            "purple",
+            "fuchsia",
+            "green",
+            "lime",
+            "olive",
+            "yellow",
+            "navy",
+            "blue",
+            "teal",
+            "aqua"]
+        )
+        if plot:
+            plt.scatter(data[unlabeled_elements][:, 0], data[unlabeled_elements][:, 1], c='black')
+            for cluster, color in tqdm(zip(clusters, colors)):
+                plt.scatter(data[cluster][:, 0], data[cluster][:, 1], c=color, s=1)
+            plt.show()
         return np.array(labels)
 
     @staticmethod
@@ -55,11 +76,7 @@ class ForelClustering:
 
 
 if __name__ == '__main__':
-    data = make_blobs(
-        n_samples=200,
-        n_features=2,
-        centers=16
-    )
-    r = 3
+    data = np.array(pd.read_csv('/home/edgar/rau/clustering/data.csv'))
+    r = 150
     model = ForelClustering(r=r)
-    model.fit_predict(data[0])
+    model.fit_predict(data, plot=True)
